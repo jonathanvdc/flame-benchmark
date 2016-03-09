@@ -34,17 +34,13 @@ namespace Flame.Benchmark
 
             if (string.IsNullOrWhiteSpace(harnessName))
             {
-                var nodes = new MarkupNode[] 
-                {
-                    new MarkupNode(NodeConstants.TextNodeType, "no harness was specified. Use '"),
-                    new MarkupNode(NodeConstants.BrightNodeType, "-harness some-harness.flo"),
-                    new MarkupNode(NodeConstants.TextNodeType, "' to specify a harness.")
-                };
-
                 throw new AbortCompilationException(
                     new LogEntry(
                         AbortCompilationException.FatalErrorEntryTitle, 
-                        new MarkupNode("#group", nodes)));
+                        HighlightEven(
+                            "no harness was specified. Use '",
+                            "-harness some-harness.flo", 
+                            "' to specify a harness.")));
             }
                 
             var pathIdent = new PathIdentifier(harnessName);
@@ -80,7 +76,7 @@ namespace Flame.Benchmark
                 return MainAndOtherAssemblies;
             }
 
-            Log.LogEvent(new LogEntry("Harness assembly name", "'" + harnessAsmName + "'"));
+            Log.LogEvent(new LogEntry("Status", HighlightEven("harness assembly name: '", harnessAsmName, "'")));
             Log.LogEvent(new LogEntry("Status", "writing benchmarking code..."));
 
             var mainAsm = MainAndOtherAssemblies.Item1;
@@ -90,8 +86,9 @@ namespace Flame.Benchmark
             {
                 throw new AbortCompilationException(new LogEntry(
                     "fatal internal error", 
-                    "harness assembly disappeared. No assembly named '" + harnessAsmName + 
-                    "' was found among the compiled assemblies."));
+                    HighlightEven(
+                        "harness assembly disappeared. No assembly named '", harnessAsmName,
+                        "' was found among the compiled assemblies.")));
             }
 
             var mainFunc = mainAsm.GetEntryPoint();
@@ -242,9 +239,20 @@ namespace Flame.Benchmark
                         Name, "')."),
                     Type.GetSourceLocation()));
             }
+            else if (method == null)
+            {
+                Log.LogEvent(new LogEntry(
+                    "Status", 
+                    HighlightEven(
+                        "did not find optional harness method '", 
+                        MemberExtensions.CombineNames(Type.FullName, Name), "'.")));
+            }
             else
             {
-                Log.LogEvent(new LogEntry("Status", HighlightEven("found harness method '", method.FullName, "'.")));
+                Log.LogEvent(new LogEntry(
+                    "Status", 
+                    HighlightEven(
+                        "found harness method '", method.FullName, "'.")));
             }
 
             return method;
