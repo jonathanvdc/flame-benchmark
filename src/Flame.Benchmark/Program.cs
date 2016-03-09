@@ -7,7 +7,7 @@ namespace Flame.Benchmark
     {
         public static void Main(string[] args)
         {
-            var compiler = new ConsoleCompiler("flame-benchmark", "the Flame benchmark writer", "https://github.com/jonathanvdc/flame-benchmark/releases");
+            var compiler = new BenchmarkCompiler();
             Environment.Exit(compiler.Compile(args));
         }
     }
