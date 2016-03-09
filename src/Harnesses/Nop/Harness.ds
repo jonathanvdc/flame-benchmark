@@ -1,0 +1,28 @@
+using System;
+using System.Collections.Generic;
+
+public module Harness
+{
+    // Pipeline:
+    // StartBenchmark -> StartIteration -> ... -> EndIteration -> EndBenchmark
+
+    public int StartBenchmark()
+    {
+        return 0;
+    }
+
+    public int StartIteration(int Value)
+    {
+        return Value;
+    }
+
+    public int EndIteration(int Value)
+    {
+        return Value;
+    }
+
+    public void EndBenchmark(int Value)
+    {
+        
+    }
+}
