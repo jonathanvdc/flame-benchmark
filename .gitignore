@@ -3,3 +3,4 @@ obj/
 *.mdb
 *.pdb
 *.userprefs
+*.log
