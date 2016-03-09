@@ -1,0 +1,21 @@
+using System;
+
+public module Test
+{
+    public int Fib(int n)
+    {
+        if (n <= 1)
+            return 1;
+        else
+            return Fib(n - 1) + Fib(n - 2);
+    }
+
+    public void Main()
+    {
+        int sum = 0;
+        for (int i = 0; i < 40; i++)
+            sum += Fib(i);
+
+        Console.WriteLine(sum);
+    }
+}

@@ -1,0 +1,24 @@
+
+build
+{
+    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(Harness) -o bin/$(FileName).exe;
+}
+
+run
+{
+    $(net-runtime) bin/$(FileName).exe $Args;
+}
+
+configs
+{
+    Og { Flags = -Og; }
+    O3 { Flags = -O3; }
+}
+
+init
+{
+    FileName = Devirtualize;
+    Iterations = 10;
+    Args = 1000 1000;
+    $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
+}

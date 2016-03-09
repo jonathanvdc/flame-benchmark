@@ -1,0 +1,82 @@
+
+public struct Vector2
+{
+    public this(set double X, set double Y);
+
+    public double X { get; set; }
+    public double Y { get; set; }
+
+    public double LengthSquared
+    {
+        get { return X * X + Y * Y; }
+    }
+
+    public Vector2 Add(Vector2 Other)
+    {
+        return new Vector2(X + Other.X, Y + Other.Y);
+    }
+    public Vector2 Subtract(Vector2 Other)
+    {
+        return new Vector2(X - Other.X, Y - Other.Y);
+    }
+    public Vector2 Scale(double Factor)
+    {
+        return new Vector2(X * Factor, Y * Factor);
+    }
+}
+
+public class Ball
+{
+    public this(set double Mass, set Vector2 Position);
+
+    public double Mass { get; private set; }
+    public Vector2 Position;
+    public Vector2 Velocity;
+}
+
+public module Physics
+{
+    public int Shuffle(int i, int n)
+    {
+        return ((i ^ n) + i) % n;
+    }
+
+    public Vector2 ShufflePos(int i)
+    {
+        return new Vector2(Shuffle(i, 30), Shuffle(i, 50));
+    }
+
+    public void ApplyGravity(Ball A, Ball B)
+    {
+        Vector2 offset = A.Position.Subtract(B.Position);
+        double distSqrInv = 1.0 / offset.LengthSquared;
+        A.Velocity = A.Velocity.Add(offset.Scale(B.Mass * distSqrInv));
+        B.Velocity = B.Velocity.Add(offset.Scale(-A.Mass * distSqrInv));
+    }
+
+    public void Main()
+    {
+        int ballCount = 200;
+
+        var balls = new Ball[ballCount];
+        for (int i = 0; i < ballCount; i++)
+            balls[i] = new Ball(i + 1, ShufflePos(i));
+
+        int tickCount = 1000;
+        for (int t = 0; t < 1000; t++)
+        {
+            for (int i = 0; i < ballCount; i++)
+            {
+                var a = balls[i];
+                for (int j = i; j < ballCount; j++)
+                {
+                    var b = balls[j];
+                    ApplyGravity(a, b);
+                }
+            }
+
+            foreach (var item in balls)
+                item.Position = item.Position.Add(item.Velocity);
+        }
+    }
+}
