@@ -1,0 +1,32 @@
+using System;
+
+public struct Point
+{
+    public this(set double X, set double Y);
+
+    public double X { get; private set; }
+    public double Y { get; private set; }
+}
+
+public module Ops
+{
+    public Point AddByVal(Point a, Point b)
+    {
+        return new Point(a.X + b.Y, a.Y + b.X);
+    }
+
+    public Point AddByRef(Point^ a, Point^ b)
+    {
+        return new Point(a->X + b->Y, a->Y + b->X);
+    }
+
+    public void AddByOut(Point^ a, Point^ b, Point^ c)
+    {
+        *c = new Point(a->X + b->Y, a->Y + b->X);
+    }
+
+    public void AddNaked(double ax, double ay, double bx, double by, double^ cx, double^ cy)
+    {
+        *cx = ax + by; *cy = ay + bx;
+    }
+}

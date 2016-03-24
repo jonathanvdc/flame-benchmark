@@ -1,0 +1,103 @@
+// Based on the C# Brainfuck benchmark. Licensed under the MIT license.
+// Original source code at: https://github.com/kostya/benchmarks
+
+using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Test
+{
+    public struct Tape
+    {
+        int pos;
+        List<int> tape;
+
+        public this()
+        {
+            pos = 0;
+            tape = new List<int>(new int[]{0});
+        }
+
+        public int Get() { return tape[pos]; }
+        public void Inc() { tape[pos]++; }
+        public void Dec() { tape[pos]--; }
+        public void Advance() { pos++; if (tape.Count <= pos) tape.Add(0); }
+        public void Devance() { if (pos > 0) { pos--; } }
+    }
+
+    public struct Program
+    {
+        public string code;
+        public Dictionary<int, int> bracket_map;
+
+        public this(string text)
+        {
+            bracket_map = new Dictionary<int, int>();
+            var sb = new StringBuilder();
+            Stack<int> leftstack = new Stack<int>();
+            int pc = 0;
+
+            for (int i = 0; i < text.Length; i++)
+            {
+                char c = text[i];
+                if ("[]<>+-,.".IndexOf(c) != -1)
+                {
+                    if (c == '[') leftstack.Push(pc);
+                    else
+                    {
+                        if (c == ']' && leftstack.Count != 0)
+                        {
+                            int left = leftstack.Pop();
+                            int right = pc;
+                            bracket_map[left] = right;
+                            bracket_map[right] = left;
+                        }
+                    }
+
+                    pc++;
+                    sb.Append(c);
+                }
+            }
+
+            code = sb.ToString();
+        }
+
+        public void Run()
+        {
+            Tape tape = new Tape();
+            for (int pc = 0; pc < code.Length; ++pc)
+            {
+                char c = code[pc];
+                if (c == '+')
+                    tape.Inc();
+                else if (c == '-')
+                    tape.Dec();
+                else if (c == '>')
+                    tape.Advance();
+                else if (c == '<')
+                    tape.Devance();
+                else if (c == '[')
+                {
+                    if (tape.Get() == 0)
+                        pc = bracket_map[pc];
+                }
+                else if (c == ']')
+                {
+                    if (tape.Get() != 0)
+                        pc = bracket_map[pc];
+                }
+                else if (c == '.')
+                    Console.Write((char)tape.Get());
+            }
+        }
+
+        static void Main(string[] args)
+        {
+            string text = File.ReadAllText(args[0]);
+            var p = new Program(text);
+            p.Run();
+        }
+    }
+}

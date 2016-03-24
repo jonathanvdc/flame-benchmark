@@ -1,7 +1,9 @@
 
 tests
 {
+    Brainfuck/Brainfuck.test;
     Devirtualize/Devirtualize.test;
+    Point/Point.test;
 }
 
 init

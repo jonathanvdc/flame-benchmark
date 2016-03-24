@@ -1,0 +1,12 @@
+tests
+{
+    ByValTest.test;
+    ByRefTest.test;
+    ByOutTest.test;
+    NakedTest.test;
+}
+
+init
+{
+    OptFlags = -O3;
+}
