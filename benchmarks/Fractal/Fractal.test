@@ -1,0 +1,23 @@
+
+build
+{
+    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(Harness) -o bin/$(FileName).exe;
+}
+
+run
+{
+    $(net-runtime) bin/$(FileName).exe;
+}
+
+configs
+{
+    Og { Flags = -Og; }
+    O3 { Flags = -O3; }
+}
+
+init
+{
+    FileName = Fractal;
+    Iterations = 1;
+    $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
+}

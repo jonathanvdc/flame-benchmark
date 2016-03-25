@@ -3,6 +3,7 @@ tests
 {
     Brainfuck/Brainfuck.test;
     Devirtualize/Devirtualize.test;
+    Fractal/Fractal.test;
     Point/Point.test;
 }
 
