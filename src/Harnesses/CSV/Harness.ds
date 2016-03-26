@@ -9,10 +9,7 @@ using System.IO;
 /// </summary>
 public struct CSVHarnessState
 {
-    public const this(set Stopwatch Watch, set TextWriter StandardOutput)
-    {
-        this.Measurements = new List<double>();
-    }
+    public const this(set Stopwatch Watch, set TextWriter StandardOutput);
 
     /// <summary>
     /// Gets the stopwatch that is used by this CSV harness.
@@ -25,9 +22,12 @@ public struct CSVHarnessState
     public TextWriter StandardOutput { get; private set; }
 
     /// <summary>
-    /// Gets this CSV harness' measurements.
+    /// Writes a single measurement to standard output.
     /// </summary>
-    public List<double> Measurements { get; private set; }
+    public void WriteMeasurement(double Measurement)
+    {
+        StandardOutput.WriteLine(Measurement);
+    }
 }
 
 /// <summary>
@@ -55,6 +55,8 @@ public module Harness
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
+        Console.WriteLine("Measurements");
+
         var stdOut = Console.Out;
 
         var tempStream = new MemoryStream();
@@ -73,7 +75,7 @@ public module Harness
     public CSVHarnessState EndIteration(CSVHarnessState State)
     {
         State.Watch.Stop();
-        State.Measurements.Add(State.Watch.Elapsed.TotalMilliseconds);
+        State.WriteMeasurement(State.Watch.Elapsed.TotalMilliseconds);
         State.Watch.Reset();
         return State;
     }
@@ -81,11 +83,5 @@ public module Harness
     public void EndBenchmark(CSVHarnessState State)
     {
         Console.SetOut(State.StandardOutput);
-
-        Console.WriteLine("Measurements");
-        foreach (var item in State.Measurements)
-        {
-            Console.WriteLine(item);
-        }
     }
 }
