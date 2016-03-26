@@ -1,0 +1,16 @@
+
+tests
+{
+    Brainfuck/benchmark.test;
+    Devirtualize/benchmark.test;
+    Fractal/benchmark.test;
+    Point/benchmark.test;
+}
+
+init
+{
+    pwd = $(working-directory);
+    flame-benchmark = $(net-runtime) $(pwd)/../src/Flame.Benchmark/bin/Release/Flame.Benchmark.exe;
+    $dsc ../src/Harnesses/CSV/Harness.ds -platform ir -runtime clr -o bin/Harness.flo -Wno-build;
+    Harness = $(pwd)/bin/Harness.flo;
+}

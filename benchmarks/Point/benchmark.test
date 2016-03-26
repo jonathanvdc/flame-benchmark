@@ -1,0 +1,7 @@
+tests
+{
+    ByValBenchmark.test;
+    ByRefBenchmark.test;
+    ByOutBenchmark.test;
+    NakedBenchmark.test;
+}
