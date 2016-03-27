@@ -1,0 +1,25 @@
+
+build
+{
+    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(Harness) -o bin/$(FileName).exe;
+}
+
+run
+{
+    $(net-runtime) bin/$(FileName).exe $Args > results/$(config).csv;
+}
+
+configs
+{
+    Og { Flags = -Og; }
+    O3 { Flags = -O3; }
+}
+
+init
+{
+    $mkdir-rec results;
+    FileName = ForceField;
+    Iterations = 20;
+    Args = 0.0001 50000000;
+    $dsc $(FileName).dsproj -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
+}

@@ -3,6 +3,7 @@ tests
 {
     Brainfuck/benchmark.test;
     Devirtualize/benchmark.test;
+    ForceField/benchmark.test;
     Fractal/benchmark.test;
     Point/benchmark.test;
 }

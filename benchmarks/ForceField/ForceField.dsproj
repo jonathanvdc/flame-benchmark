@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <Setter Property="TargetPlatform" Value="clr" />
+    <Setter Property="AssemblyName" Value="Program" />
+    <ItemGroup>
+        <RuntimeLibrary Include="PortableRT" />
+        <RuntimeLibrary Include="System" />
+        <RuntimeLibrary Include="System.Core" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Particle.ds" />
+        <Compile Include="Program.ds" />
+        <Compile Include="Vector.ds" />
+    </ItemGroup>
+</Project>
