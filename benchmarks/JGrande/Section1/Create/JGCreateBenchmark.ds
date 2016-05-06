@@ -461,8 +461,8 @@ namespace CSGrande
 
         public static void Main(int InputSize)
         {
-            INITSIZE = InputSize / 100;
-            MAXSIZE = InputSize / 10;
+            INITSIZE = InputSize / 20;
+            MAXSIZE = InputSize / 2;
             //JGFInstrumentor.printHeader(1,0);
 
             JGFCreateBench crb = new JGFCreateBench();

@@ -19,7 +19,7 @@ init
 {
     FileName = ByValTest;
     $mkdir-rec results/$(FileName);
-    Iterations = 20;
-    Args = 10000000 10;
+    Iterations = 2000;
+    Args = 100000 10;
     $dsc PointDef.ds $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }

@@ -124,8 +124,8 @@ namespace CSGrande
 
         public static void Main(int InputSize)
         {
-            INITSIZE = InputSize * 100;
-            MAXSIZE = InputSize * 1000;
+            INITSIZE = InputSize * 1000;
+            MAXSIZE = InputSize * 10000;
 
             JGFLoopBench lb = new JGFLoopBench();
             lb.JGFrun();
