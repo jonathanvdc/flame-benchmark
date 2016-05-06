@@ -364,8 +364,8 @@ namespace CSGrande
         }
         public static void Main(int InputSize)
         {
-            INITSIZE = InputSize / 5;
-            MAXSIZE = InputSize * 2;
+            INITSIZE = InputSize * 25;
+            MAXSIZE = InputSize * 100;
             a1 = 1;
             a2 = 2;
             a3 = 3;

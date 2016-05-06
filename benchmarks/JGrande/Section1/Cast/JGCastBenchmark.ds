@@ -202,8 +202,8 @@ namespace CSGrande
 
         public static void Main(int InputSize)
         {
-            INITSIZE = InputSize / 2;
-            MAXSIZE = InputSize * 5;
+            INITSIZE = InputSize;
+            MAXSIZE = InputSize * 10;
 
             JGFCastBench cb = new JGFCastBench();
             cb.JGFrun();
