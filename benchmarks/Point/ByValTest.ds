@@ -2,9 +2,9 @@ using System;
 
 public module PointTest
 {
-    public static void Main()
+    public static void Main(int InputSize)
     {
-        int iterations = 1000000000;
+        int iterations = InputSize;
 
         // trigger runtime compilation if needed
         Point a = new Point(1, 1), b = new Point(1, 1);

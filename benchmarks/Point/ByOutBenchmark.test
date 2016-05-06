@@ -1,7 +1,7 @@
 
 build
 {
-    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(Harness) -o bin/$(FileName).exe;
+    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(HarnessExp) -o bin/$(FileName).exe;
 }
 
 run
@@ -20,5 +20,6 @@ init
     FileName = ByOutTest;
     $mkdir-rec results/$(FileName);
     Iterations = 20;
+    Args = 10000000 10;
     $dsc PointDef.ds $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }

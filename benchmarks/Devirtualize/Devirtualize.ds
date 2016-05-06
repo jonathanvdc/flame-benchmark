@@ -26,16 +26,10 @@ public static class Program
         return Ops.Add(Ops.Mul(X, X), Ops.Mul(Y, Y));
     }
 
-    public static void Main(string[] args)
+    public static void Main(int InputSize)
     {
-        if (args.Length != 2)
-        {
-            Console.WriteLine("This program expected exactly two (integer) arguments.");
-            return;
-        }
-
-        long maxX = long.Parse(args[0]);
-        long maxY = long.Parse(args[1]);
+        long maxX = (long)Math.Sqrt(InputSize);
+        long maxY = maxX;
 
         long result = 0;
         for (long i = 0; i < maxX; i++)

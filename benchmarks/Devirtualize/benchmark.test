@@ -1,7 +1,7 @@
 
 build
 {
-    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(Harness) -o bin/$(FileName).exe;
+    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(HarnessExp) -o bin/$(FileName).exe;
 }
 
 run
@@ -19,7 +19,7 @@ init
 {
     $mkdir-rec results;
     FileName = Devirtualize;
-    Iterations = 100;
-    Args = 10000 10000;
+    Iterations = 1000;
+    Args = 10000000 10;
     $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }

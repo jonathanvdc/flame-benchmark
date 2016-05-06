@@ -12,6 +12,8 @@ init
 {
     pwd = $(working-directory);
     flame-benchmark = $(net-runtime) $(pwd)/../src/Flame.Benchmark/bin/Release/Flame.Benchmark.exe;
-    $dsc ../src/Harnesses/CSV/Harness.ds -platform ir -runtime clr -o bin/Harness.flo -Wno-build;
     Harness = $(pwd)/bin/Harness.flo;
+    HarnessExp = $(pwd)/bin/HarnessExp.flo;
+    $dsc ../src/Harnesses/CSV/Harness.ds -platform ir -runtime clr -o=$Harness -Wno-build;
+    $dsc ../src/Harnesses/CSVExp/Harness.ds -platform ir -runtime clr -o=$HarnessExp -Wno-build;
 }
