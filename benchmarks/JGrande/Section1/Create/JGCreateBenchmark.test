@@ -1,0 +1,25 @@
+
+build
+{
+    $(flame-benchmark) bin/$(FileName).flo -platform clr $(Flags) --iterations=$(Iterations) --harness=$(HarnessExp) -o bin/$(FileName).exe;
+}
+
+run
+{
+    $(net-runtime) bin/$(FileName).exe $Args > results/$(config).csv;
+}
+
+configs
+{
+    Og { Flags = -Og; }
+    O3 { Flags = -O3; }
+}
+
+init
+{
+    $mkdir-rec results;
+    FileName = JGCreateBenchmark;
+    Iterations = 200;
+    Args = 10000 10;
+    $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
+}

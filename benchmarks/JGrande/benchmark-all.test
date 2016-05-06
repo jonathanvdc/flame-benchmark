@@ -1,0 +1,12 @@
+tests
+{
+    Section1/Arith/JGArithBenchmark.test;
+    Section1/Assign/JGAssignBenchmark.test;
+    Section1/Cast/JGCastBenchmark.test;
+    Section1/Create/JGCreateBenchmark.test;
+    Section1/Loops/JGLoopsBenchmark.test;
+    Section2/FFT/JGFFFTBenchmark.test;
+    Section2/Heapsort/JGHeapsortBenchmark.test;
+    Section2/SparseMatMult/JGSparseMatMultBenchmark.test;
+    Section3/RayTracer/JGRayTracerBenchmark.test;
+}

@@ -1,6 +1,7 @@
 
 tests
 {
+    JGrande/benchmark-all.test;
     Brainfuck/benchmark.test;
     Devirtualize/benchmark.test;
     ForceField/benchmark.test;
