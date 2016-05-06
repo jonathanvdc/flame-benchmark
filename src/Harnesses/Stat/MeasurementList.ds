@@ -1,0 +1,63 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
+
+/// <summary>
+/// A class that records and aggregates measurements.
+/// </summary>
+public class MeasurementList
+{
+    public const this()
+    {
+        results = new List<double>();
+    }
+
+    private List<double> results;
+
+    public int Count { get { return results.Count; } }
+
+    public [double] Measurements { get { return results; } }
+
+    /// <summary>
+    /// Gets the mean of the measurements.
+    /// </summary>
+    public double Mean
+    {
+        get
+        {
+            double avg = 0.0;
+            foreach (var item in results)
+            {
+                avg += item;
+            }
+            return avg / results.Count;
+        }
+    }
+
+    /// <summary>
+    /// Gets the standard deviation of the measurements.
+    /// </summary>
+    public double StandardDeviation
+    {
+        get
+        {
+            double meanVal = Mean;
+            double variance = 0.0;
+            foreach (var item in results)
+            {
+                variance += (item - meanVal) * (item - meanVal);
+            }
+            return Math.Sqrt(variance / (results.Count - 1));
+        }
+    }
+
+    /// <summary>
+    /// Adds a measurement to this set of measurements.
+    /// </summary>
+    public void Add(double Value)
+    {
+        results.Add(Value);
+    }
+}
