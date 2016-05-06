@@ -19,7 +19,7 @@ init
 {
     $mkdir-rec results;
     FileName = JGCastBenchmark;
-    Iterations = 200;
-    Args = 10000 10;
+    Iterations = 128;
+    Args = 10000 2;
     $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }
