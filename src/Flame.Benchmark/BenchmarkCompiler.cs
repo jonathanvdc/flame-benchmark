@@ -113,26 +113,22 @@ namespace Flame.Benchmark
             benchmarkClass.AddAttribute(PrimitiveAttributes.Instance.StaticTypeAttribute);
 
             // Define an entry point function:
-            //     public static void Main(args...)
+            //     public static void Main(string[] Args)
             var benchmarkEp = new DescribedBodyMethod(
                 "Main", benchmarkClass, PrimitiveTypes.Void, true);
-            
-            foreach (var parameter in mainFunc.Parameters)
-            {
-                benchmarkEp.AddParameter(parameter);
-            }
+
+            benchmarkEp.AddParameter(new DescribedParameter("Args", PrimitiveTypes.String.MakeArrayType(1)));
+            var benchEpArg = new ArgumentVariable(benchmarkEp.Parameters.Single(), 0).CreateGetExpression();
 
             // Synthesize a method body for the entry point function.
             // We want it to look like this:
             // 
-            //     typeof(StartBenchmark()) state = StartBenchmark();
-            //     int i = iteration_count;
-            //     while (i > 0)
+            //     typeof(StartBenchmark()) state = StartBenchmark(args, iteration_count);
+            //     while (IsRunning(state))
             //     {
             //         state = StartIteration(state);
-            //         ActualMain(args...);
+            //         GetIterationArguments(state) |> ActualMain;
             //         state = EndIteration(state);
-            //         i--;
             //     }
             //     EndBenchmark(state);
             //     return;
@@ -141,16 +137,14 @@ namespace Flame.Benchmark
 
             // Define the state variable, as well as an induction variable.
             var benchVariable = new RegisterVariable("state", harness.StartBenchmarkMethod.ReturnType);
-            var inductionVar = new RegisterVariable("i", PrimitiveTypes.Int32);
-
-            // `typeof(StartBenchmark()) state = StartBenchmark();`
-            epBody.Add(benchVariable.CreateSetStatement(
-                new InvocationExpression(harness.StartBenchmarkMethod, null, new IExpression[0])));
 
             int iterationCount = Log.Options.GetOption<int>("iterations", 1);
 
-            // `int i = iteration_count;`
-            epBody.Add(inductionVar.CreateSetStatement(new Int32Expression(iterationCount)));
+            // `typeof(StartBenchmark()) state = StartBenchmark();`
+            epBody.Add(benchVariable.CreateSetStatement(
+                CreatePartialInvocation(
+                    harness.StartBenchmarkMethod, 
+                    new IExpression[] { benchEpArg, new Int32Expression(iterationCount) })));
 
             // `state = StartIteration(state);`
             var startIter = harness.StartIterationMethod == null 
@@ -159,10 +153,9 @@ namespace Flame.Benchmark
                     harness.StartIterationMethod, null, 
                     new IExpression[] { benchVariable.CreateGetExpression() }));
 
-            // `ActualMain(args...);`
-            var runIter = new ExpressionStatement(new InvocationExpression(
-                mainFunc, null, 
-                benchmarkEp.Parameters.Select((item, i) => new ArgumentVariable(item, i).CreateGetExpression())));
+            // `GetIterationArguments(state) |> ActualMain;`
+            var runIter = new ExpressionStatement(CreateMainInvocation(
+                mainFunc, harness, benchVariable.CreateGetExpression()));
 
             // `state = EndIteration(state);`
             var endIter = harness.StartIterationMethod == null 
@@ -174,19 +167,14 @@ namespace Flame.Benchmark
             // Create the loop body.
             var loopBody = new BlockStatement(new IStatement[] 
             { 
-                startIter, runIter, endIter,
-                // `i--;`
-                inductionVar.CreateSetStatement(
-                    new SubtractExpression(
-                        inductionVar.CreateGetExpression(), 
-                        new Int32Expression(1)))
+                startIter, runIter, endIter
             }).Simplify();
 
             // Create the loop.
             epBody.Add(new WhileStatement(
-                new GreaterThanExpression(
-                    inductionVar.CreateGetExpression(), 
-                    new Int32Expression(0)), 
+                new InvocationExpression(
+                    harness.IsRunningMethod, null,
+                    new IExpression[] { benchVariable.CreateGetExpression() }),
                 loopBody));
 
             // `EndBenchmark(state);`
@@ -281,6 +269,26 @@ namespace Flame.Benchmark
             return method;
         }
 
+        private static bool IsPartialMatch(IType[] Values, IType[] Template)
+        {
+            if (Values.Length > Template.Length)
+                return false;
+
+            for (int i = 0; i < Values.Length; i++)
+            {
+                if (!Values[i].Equals(Template[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static IExpression CreatePartialInvocation(IMethod Method, params IExpression[] Args)
+        {
+            var argList = Method.Parameters.Zip(Args, Tuple.Create).Select(item => item.Item2).ToArray();
+            return new InvocationExpression(Method, null, argList);
+        }
+
         /// <summary>
         /// Retrieves the start-benchmark method from the
         /// given harness class type.
@@ -289,7 +297,21 @@ namespace Flame.Benchmark
         {
             const string MethodName = "StartBenchmark";
 
-            var results = Type.Methods.Where(item => item.IsStatic && item.Name == MethodName && !item.Parameters.Any()).ToArray();
+            var argTys = new IType[] { PrimitiveTypes.String.MakeArrayType(1), PrimitiveTypes.Int32 };
+
+            var results = Type.Methods.Where(item => 
+            {
+                if (item.IsStatic && item.Name == MethodName)
+                {
+                    return IsPartialMatch(
+                        item.Parameters.Select(p => p.ParameterType).ToArray(), 
+                        argTys);
+                }
+                else
+                {
+                    return false;
+                }
+            }).ToArray();
 
             if (results.Length == 0)
             {
@@ -297,8 +319,9 @@ namespace Flame.Benchmark
                     AbortCompilationException.FatalErrorEntryTitle,
                     HighlightEven(
                         "harness class '", Type.FullName, 
-                        "' contains no static, parameterless method named '", 
-                        MethodName, "'."),
+                        "' contains no static method named '", 
+                        MethodName, "' that takes at most a '", 
+                        "string[]", " and an '", "int", "' parameter."),
                     Type.GetSourceLocation()));
             }
 
@@ -308,14 +331,141 @@ namespace Flame.Benchmark
                     AbortCompilationException.FatalErrorEntryTitle,
                     HighlightEven(
                         "harness class '", Type.FullName, 
-                        "' contains more than one static, parameterless method named '", 
-                        MethodName, "'."),
+                        "' contains more than one static method named '", 
+                        MethodName, "' that takes at most a '", 
+                        "string[]", " and an '", "int", "' parameter."),
                     Type.GetSourceLocation()));
             }
 
             Log.LogEvent(new LogEntry("Status", HighlightEven("found harness method '", results[0].FullName, "'.")));
 
             return results[0];
+        }
+
+        /// <summary>
+        /// Retrieves the get-iteration-arguments method from the
+        /// given harness class type.
+        /// </summary>
+        private static IMethod FindGetIterationArgumentsMethod(IType HarnessType, IType StateType, ICompilerLog Log)
+        {
+            const string MethodName = "GetIterationArguments";
+
+            var argTys = new IType[] { StateType };
+
+            var results = HarnessType.Methods.Where(item => 
+            {
+                if (item.IsStatic && item.Name == MethodName)
+                {
+                    return IsPartialMatch(
+                        argTys,
+                        item.Parameters.Select(p => p.ParameterType).ToArray());
+                }
+                else
+                {
+                    return false;
+                }
+            }).ToArray();
+
+            if (results.Length == 0)
+            {
+                throw new AbortCompilationException(new LogEntry(
+                    AbortCompilationException.FatalErrorEntryTitle,
+                    HighlightEven(
+                        "harness class '", StateType.FullName, 
+                        "' contains no static method named '", 
+                        MethodName, "' that takes at least a '", 
+                        HarnessType.FullName, "' parameter."),
+                    HarnessType.GetSourceLocation()));
+            }
+
+            if (results.Length > 1)
+            {
+                throw new AbortCompilationException(new LogEntry(
+                    AbortCompilationException.FatalErrorEntryTitle,
+                    HighlightEven(
+                        "harness class '", StateType.FullName, 
+                        "' contains more than one static method named '", 
+                        MethodName, "' that takes at least a '", 
+                        HarnessType.FullName, "' parameter."),
+                    HarnessType.GetSourceLocation()));
+            }
+
+            Log.LogEvent(new LogEntry("Status", HighlightEven("found harness method '", results[0].FullName, "'.")));
+
+            return results[0];
+        }
+
+        private static IExpression CreateMainInvocation(
+            IMethod MainMethod, Harness Harness, IExpression BenchmarkState)
+        {
+            var getIterFunc = Harness.GetIterationArgumentsMethod;
+
+            var init = new List<IStatement>();
+            var mainArgs = new List<IExpression>();
+            var getIterArgs = new List<IExpression>();
+            getIterArgs.Add(BenchmarkState);
+
+            foreach (var item in getIterFunc.Parameters.Skip(1))
+            {
+                var ty = item.ParameterType;
+                if (ty.GetIsPointer() &&
+                    ty.AsPointerType().PointerKind.Equals(PointerKind.ReferencePointer))
+                {
+                    if (!item.HasAttribute(PrimitiveAttributes.Instance.OutAttribute.AttributeType))
+                    {
+                        throw new AbortCompilationException(new LogEntry(
+                            AbortCompilationException.FatalErrorEntryTitle,
+                            HighlightEven(
+                                "parameter '", item.Name, "' of harness method '", getIterFunc.FullName, 
+                                "' was not an '", "out", "' parameter."),
+                            item.GetSourceLocation()));
+                    }
+
+                    var local = new LocalVariable(ty.AsPointerType().ElementType);
+                    getIterArgs.Add(local.CreateAddressOfExpression());
+                    mainArgs.Add(local.CreateGetExpression());
+                }
+                else
+                {
+                    throw new AbortCompilationException(new LogEntry(
+                        AbortCompilationException.FatalErrorEntryTitle,
+                        HighlightEven(
+                            "parameter '", item.Name, "' of harness method '", getIterFunc.FullName, 
+                            "' had type '", ty.Name, "'. Expected a reference pointer type, i.e. '", 
+                            ty.MakePointerType(PointerKind.ReferencePointer).Name, "'."),
+                        item.GetSourceLocation()));
+                }
+            }
+
+            var getIterCall = new InvocationExpression(
+                getIterFunc, null, getIterArgs);
+            
+            if (!getIterFunc.ReturnType.IsEquivalent(PrimitiveTypes.Void))
+                mainArgs.Add(getIterCall);
+            else
+                init.Add(new ExpressionStatement(getIterCall));
+
+            var actualArgs = new List<IExpression>();
+            foreach (var argPair in MainMethod.Parameters.Zip(mainArgs, Tuple.Create))
+            {
+                if (!argPair.Item1.ParameterType.IsEquivalent(argPair.Item2.Type))
+                {
+                    throw new AbortCompilationException(new LogEntry(
+                        AbortCompilationException.FatalErrorEntryTitle,
+                        HighlightEven(
+                            "parameter '", argPair.Item1.Name, "' of '", MainMethod.Name, 
+                            "' method had type '", argPair.Item1.ParameterType.Name, 
+                            "', but the corresponding result value from '", getIterFunc.Name, 
+                            "' had type '", argPair.Item2.Type.Name, "'."),
+                        argPair.Item1.GetSourceLocation()));
+                }
+
+                actualArgs.Add(argPair.Item2);
+            }
+
+            return new InitializedExpression(
+                new BlockStatement(init),
+                new InvocationExpression(MainMethod, null, actualArgs));
         }
 
         /// <summary>
@@ -340,10 +490,12 @@ namespace Flame.Benchmark
             var startBench = GetStartBenchmarkMethod(harnessTy, Log);
             var stateTy = startBench.ReturnType;
             var startIter = GetOptionalHarnessMethod(harnessTy, "StartIteration", stateTy, stateTy, Log);
+            var isRunning = GetRequiredHarnessMethod(harnessTy, "IsRunning", PrimitiveTypes.Boolean, stateTy, Log);
+            var getIterationArgs = FindGetIterationArgumentsMethod(harnessTy, stateTy, Log);
             var endIter = GetOptionalHarnessMethod(harnessTy, "EndIteration", stateTy, stateTy, Log);
             var endBench = GetRequiredHarnessMethod(harnessTy, "EndBenchmark", PrimitiveTypes.Void, stateTy, Log);
 
-            return new Harness(startBench, startIter, endBench, endIter);
+            return new Harness(startBench, isRunning, startIter, getIterationArgs, endBench, endIter);
         }
     }
 }

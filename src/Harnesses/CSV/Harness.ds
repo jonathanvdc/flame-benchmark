@@ -7,9 +7,11 @@ using System.IO;
 /// <summary>
 /// A state data structure for the CSV harness.
 /// </summary>
-public struct CSVHarnessState
+public class CSVHarnessState
 {
-    public const this(set Stopwatch Watch, set TextWriter StandardOutput);
+    public const this(
+        set string[] Arguments, set int MaxIterations,
+        set Stopwatch Watch, set TextWriter StandardOutput);
 
     /// <summary>
     /// Gets the stopwatch that is used by this CSV harness.
@@ -20,6 +22,35 @@ public struct CSVHarnessState
     /// Gets the standard output text writer.
     /// </summary>
     public TextWriter StandardOutput { get; private set; }
+
+    /// <summary>
+    /// Gets the list of input arguments.
+    /// </summary>
+    public string[] Arguments { get; private set; }
+
+    /// <summary>
+    /// Gets the current iteration's index.
+    /// </summary>
+    public int IterationIndex { get; private set; }
+
+    /// <summary>
+    /// Gets the total number of iterations to perform.
+    /// </summary>
+    public int MaxIterations { get; private set; }
+
+    /// <summary>
+    /// Gets a boolean value that tells whether the benchmarking process
+    /// should continue running for this configuration.
+    /// </summary>
+    public bool IsRunning { get { return IterationIndex < MaxIterations; } }
+
+    /// <summary>
+    /// Moves to the next iteration.
+    /// </summary>
+    public void NextIteration()
+    {
+        IterationIndex++;
+    }
 
     /// <summary>
     /// Writes a single measurement to standard output.
@@ -38,9 +69,9 @@ public struct CSVHarnessState
 public module Harness
 {
     // Pipeline:
-    // StartBenchmark -> StartIteration -> ... -> EndIteration -> EndBenchmark
+    // StartBenchmark -> IsRunning -> StartIteration -> GetIterationArguments -> EndIteration -> EndBenchmark
 
-    public CSVHarnessState StartBenchmark()
+    public CSVHarnessState StartBenchmark(string[] Args, int IterationCount)
     {
         // Run at highest priority to minimize fluctuations caused by other processes/threads
 
@@ -63,7 +94,7 @@ public module Harness
         var writer = new StreamWriter(tempStream);
         Console.SetOut(writer);
 
-        return new CSVHarnessState(watch, stdOut);
+        return new CSVHarnessState(Args, IterationCount, watch, stdOut);
     }
 
     public CSVHarnessState StartIteration(CSVHarnessState State)
@@ -72,12 +103,23 @@ public module Harness
         return State;
     }
 
+    public string[] GetIterationArguments(CSVHarnessState State)
+    {
+        return State.Arguments;
+    }
+
     public CSVHarnessState EndIteration(CSVHarnessState State)
     {
         State.Watch.Stop();
         State.WriteMeasurement(State.Watch.Elapsed.TotalMilliseconds);
         State.Watch.Reset();
+        State.NextIteration();
         return State;
+    }
+
+    public bool IsRunning(CSVHarnessState State)
+    {
+        return State.IsRunning;
     }
 
     public void EndBenchmark(CSVHarnessState State)

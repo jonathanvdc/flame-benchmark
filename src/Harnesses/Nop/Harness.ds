@@ -1,28 +1,47 @@
 using System;
 using System.Collections.Generic;
 
+public class HarnessState
+{
+    public const this(set string[] Args, set int IterationsRemaining);
+
+    public int IterationsRemaining { get; set; }
+    public string[] Args { get; set; }
+}
+
 public module Harness
 {
     // Pipeline:
-    // StartBenchmark -> StartIteration -> ... -> EndIteration -> EndBenchmark
+    // StartBenchmark -> StartIteration -> GetIterationArguments -> EndIteration -> EndBenchmark
 
-    public int StartBenchmark()
+    public HarnessState StartBenchmark(string[] Args, int IterationCount)
     {
-        return 0;
+        return new HarnessState(Args, IterationCount);
     }
 
-    public int StartIteration(int Value)
+    public HarnessState StartIteration(HarnessState Value)
     {
         return Value;
     }
 
-    public int EndIteration(int Value)
+    public bool IsRunning(HarnessState State)
     {
+        return State.IterationsRemaining > 0;
+    }
+
+    public string[] GetIterationArguments(HarnessState Value)
+    {
+        return Value.Args;
+    }
+
+    public HarnessState EndIteration(HarnessState Value)
+    {
+        Value.IterationsRemaining--;
         return Value;
     }
 
-    public void EndBenchmark(int Value)
+    public void EndBenchmark(HarnessState Value)
     {
-        
+
     }
 }
