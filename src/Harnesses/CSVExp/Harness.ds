@@ -112,7 +112,7 @@ public module Harness
         GC.WaitForPendingFinalizers();
         GC.Collect();
 
-        Console.WriteLine("Measurements");
+        Console.WriteLine("\"Input size\", Measurements");
 
         var stdOut = Console.Out;
 
