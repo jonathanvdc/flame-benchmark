@@ -78,13 +78,13 @@ namespace CSGrande
 
     public class JGFLoopBench
     {
-        public static int INITSIZE;
-        public static int MAXSIZE;
+        public static long INITSIZE;
+        public static long MAXSIZE;
 
         public void JGFrun()
         {
 
-            int i, size;
+            long i, size;
 
             // Empty for loop
             size = INITSIZE;
