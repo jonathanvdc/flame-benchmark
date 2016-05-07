@@ -19,7 +19,7 @@ init
 {
     $mkdir-rec results;
     FileName = Brainfuck;
-    Iterations = 10;
+    Iterations = 15;
     $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
     Args = bench.b;
 }

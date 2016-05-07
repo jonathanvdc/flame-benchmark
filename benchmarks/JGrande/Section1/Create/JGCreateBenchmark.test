@@ -19,7 +19,7 @@ init
 {
     $mkdir-rec results;
     FileName = JGCreateBenchmark;
-    Iterations = 384;
+    Iterations = 1024;
     Args = 8192 2;
     $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }

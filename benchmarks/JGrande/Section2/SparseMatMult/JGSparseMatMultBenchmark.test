@@ -19,6 +19,6 @@ init
 {
     $mkdir-rec results;
     FileName = JGSparseMatMult;
-    Iterations = 50;
+    Iterations = 64;
     $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }
