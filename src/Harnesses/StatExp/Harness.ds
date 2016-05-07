@@ -159,14 +159,17 @@ public module Harness
     {
         Console.SetOut(State.StandardOutput);
 
-        Console.WriteLine("InputSize, Iterations, Mean, StandardDeviation");
+        Console.WriteLine("InputSize, Iterations, Mean, StandardDeviation, RelStandardDeviation");
         foreach (var item in State.Results)
         {
             if (item.Value.Count > 0)
             {
+                double mean = item.Value.Mean;
+                double sdDev = item.Value.StandardDeviation;
+
                 Console.WriteLine(
-                item.Key + ", " + item.Value.Count + ", " +
-                item.Value.Mean + ", " + item.Value.StandardDeviation);
+                    item.Key + ", " + item.Value.Count + ", " +
+                    mean + ", " + sdDev + ", " + (sdDev / mean));
             }
         }
     }

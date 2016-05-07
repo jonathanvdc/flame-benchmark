@@ -132,7 +132,10 @@ public module Harness
     {
         Console.SetOut(State.StandardOutput);
 
-        Console.WriteLine("Iterations, Mean, StandardDeviation");
-        Console.WriteLine(State.Measurements.Count + ", " + State.Measurements.Mean + ", " + State.Measurements.StandardDeviation);
+        double mean = State.Measurements.Mean;
+        double sdDev = State.Measurements.StandardDeviation;
+
+        Console.WriteLine("Iterations, Mean, StandardDeviation, RelStandardDeviation");
+        Console.WriteLine(State.Measurements.Count + ", " + mean + ", " + sdDev + ", " + (sdDev / mean));
     }
 }
