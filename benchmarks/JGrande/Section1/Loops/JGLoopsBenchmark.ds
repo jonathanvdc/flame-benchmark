@@ -94,7 +94,7 @@ namespace CSGrande
                 {
                 }
                 if (i > size) Console.WriteLine(i);
-                size *= 2;
+                size *= (long)2;
             }
 
             // Reverse iterating for loop
@@ -105,7 +105,7 @@ namespace CSGrande
                 {
                 }
                 if (i > 0) Console.WriteLine(i);
-                size *= 2;
+                size *= (long)2;
             }
 
             // Empty while loop
@@ -118,14 +118,14 @@ namespace CSGrande
                     i++;
                 }
                 if (i < size) Console.WriteLine(i);
-                size *= 2;
+                size *= (long)2;
             }
         }
 
         public static void Main(int InputSize)
         {
-            INITSIZE = InputSize * 1000;
-            MAXSIZE = InputSize * 10000;
+            INITSIZE = (long)InputSize * 1000;
+            MAXSIZE = (long)InputSize * 10000;
 
             JGFLoopBench lb = new JGFLoopBench();
             lb.JGFrun();
