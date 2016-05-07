@@ -20,6 +20,6 @@ init
     $mkdir-rec results;
     FileName = Devirtualize;
     Iterations = 256;
-    Args = 10000000 2;
+    Args = 8388608 2;
     $dsc $(FileName).ds -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }

@@ -20,6 +20,6 @@ init
     $mkdir-rec results;
     FileName = ForceField;
     Iterations = 64;
-    Args = 10000000 2;
+    Args = 4194304 2;
     $dsc $(FileName).dsproj -platform ir -runtime clr -o bin/$(FileName).flo -Wno-build;
 }
