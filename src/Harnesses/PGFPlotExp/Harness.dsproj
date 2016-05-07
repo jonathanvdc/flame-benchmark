@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <Setter Property="TargetPlatform" Value="clr" />
+    <Setter Property="AssemblyName" Value="Harness" />
+    <ItemGroup>
+        <RuntimeLibrary Include="PortableRT" />
+        <RuntimeLibrary Include="System" />
+        <RuntimeLibrary Include="System.Core" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Harness.ds" />
+        <Compile Include="../Stat/MeasurementList.ds" />
+    </ItemGroup>
+</Project>

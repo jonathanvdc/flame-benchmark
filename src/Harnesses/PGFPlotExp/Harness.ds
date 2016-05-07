@@ -1,0 +1,188 @@
+// A flame-benchmark harness that computes various statistical properties,
+// such as the mean and standard deviation. The means are then formatted
+// as PGFPlot coordinates, and the other statistical properties are encoded
+// as comments.
+
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading;
+using System.IO;
+using System.Text;
+
+/// <summary>
+/// A state data structure for the statistical harness.
+/// </summary>
+public class StatHarnessState
+{
+    public const this(
+        set int InputSize, set int Exponent, set int MaxIterations,
+        set Stopwatch Watch, set TextWriter StandardOutput)
+    {
+        this.results = new Dictionary<int, MeasurementList>();
+        this.results[InputSize] = new MeasurementList();
+    }
+
+    private Dictionary<int, MeasurementList> results;
+
+    public IReadOnlyDictionary<int, MeasurementList> Results { get { return results; } }
+
+    /// <summary>
+    /// Gets the stopwatch that is used by this CSV harness.
+    /// </summary>
+    public Stopwatch Watch { get; private set; }
+
+    /// <summary>
+    /// Gets the standard output text writer.
+    /// </summary>
+    public TextWriter StandardOutput { get; private set; }
+
+    /// <summary>
+    /// Gets the current iteration's index.
+    /// </summary>
+    public int IterationIndex { get; private set; }
+
+    /// <summary>
+    /// Gets the input size for this iteration.
+    /// </summary>
+    public int InputSize { get; private set; }
+
+    /// <summary>
+    /// Gets the exponent that is used to multiply the input size with.
+    /// </summary>
+    public int Exponent { get; private set; }
+
+    /// <summary>
+    /// Gets the maximal number of iterations to perform for this input size.
+    /// </summary>
+    public int MaxIterations { get; private set; }
+
+    /// <summary>
+    /// Gets a boolean value that tells whether the benchmarking process
+    /// should continue running for this configuration.
+    /// </summary>
+    public bool IsRunning { get { return MaxIterations > 0; } }
+
+    /// <summary>
+    /// Moves to the next iteration.
+    /// </summary>
+    public void NextIteration()
+    {
+        IterationIndex++;
+
+        if (IterationIndex >= Math.Max(MaxIterations, 2))
+        {
+            IterationIndex = 0;
+            MaxIterations /= Exponent;
+            InputSize *= Exponent;
+            results[InputSize] = new MeasurementList();
+        }
+    }
+
+    /// <summary>
+    /// Adds a single value to the list of recorded measurements.
+    /// </summary>
+    public void WriteMeasurement(double Measurement)
+    {
+        results[InputSize].Add(Measurement);
+    }
+}
+
+/// <summary>
+/// A harness that prints comma-separated value files to standard output.
+/// It is based on StackOverflow answer:
+/// http://stackoverflow.com/questions/1047218/benchmarking-small-code-samples-in-c-can-this-implementation-be-improved
+/// </summary>
+public module Harness
+{
+    // Pipeline:
+    // StartBenchmark -> IsRunning -> StartIteration -> GetIterationArguments -> EndIteration -> EndBenchmark
+
+    public StatHarnessState StartBenchmark(string[] Args, int IterationCount)
+    {
+        if (Args.Length != 2)
+        {
+            Console.WriteLine(
+                "Expected exactly two arguments: the initial input size, " +
+                "and the exponent with which that input size is multiplied.");
+            Environment.Exit(1);
+        }
+
+        int initInputSize = int.Parse(Args[0]);
+        int exponent = int.Parse(Args[1]);
+
+        // Run at highest priority to minimize fluctuations caused by other processes/threads
+
+        // This seems to throw a runtime exception on mono.
+        // Process.GetCurrentProcess().PriorityClass = ProcessPriorityClass.High;
+        Thread.CurrentThread.Priority = ThreadPriority.Highest;
+
+        var watch = new Stopwatch();
+
+        // clean up
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+
+        var stdOut = Console.Out;
+
+        var tempStream = new MemoryStream();
+        var writer = new StreamWriter(tempStream);
+        Console.SetOut(writer);
+
+        return new StatHarnessState(initInputSize, exponent, IterationCount, watch, stdOut);
+    }
+
+    public StatHarnessState StartIteration(StatHarnessState State)
+    {
+        State.Watch.Start();
+        return State;
+    }
+
+    public int GetIterationArguments(StatHarnessState State)
+    {
+        return State.InputSize;
+    }
+
+    public StatHarnessState EndIteration(StatHarnessState State)
+    {
+        State.Watch.Stop();
+        State.WriteMeasurement(State.Watch.Elapsed.TotalMilliseconds);
+        State.Watch.Reset();
+        State.NextIteration();
+        return State;
+    }
+
+    public bool IsRunning(StatHarnessState State)
+    {
+        return State.IsRunning;
+    }
+
+    public void EndBenchmark(StatHarnessState State)
+    {
+        Console.SetOut(State.StandardOutput);
+
+        var commentBuilder = new StringBuilder();
+        var coordinateBuilder = new StringBuilder();
+
+        commentBuilder.AppendLine("% InputSize, Iterations, Mean, StandardDeviation, RelStandardDeviation");
+        coordinateBuilder.AppendLine("coordinates {");
+        foreach (var item in State.Results)
+        {
+            if (item.Value.Count > 0)
+            {
+                double mean = item.Value.Mean;
+                double sdDev = item.Value.StandardDeviation;
+
+                commentBuilder.AppendLine(
+                    "% " + item.Key + ", " + item.Value.Count + ", " +
+                    mean + ", " + sdDev + ", " + (sdDev / mean));
+                coordinateBuilder.Append("(" + item.Value.Count + "," + mean + ")");
+            }
+        }
+        coordinateBuilder.AppendLine("};");
+
+        Console.Write(commentBuilder.ToString());
+        Console.Write(coordinateBuilder.ToString());
+    }
+}
