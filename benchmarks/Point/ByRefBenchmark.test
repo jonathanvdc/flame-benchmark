@@ -6,7 +6,7 @@ build
 
 run
 {
-    $(net-runtime) bin/$(FileName).exe $Args > results/$(FileName)/$(config).csv;
+    $(net-runtime) bin/$(FileName).exe $Args > results/$(FileName)/$(config).$(ExpExtension);
 }
 
 configs
