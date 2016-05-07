@@ -1,0 +1,53 @@
+// This is a D# port of the rolling average performance benchmark by pynewb.
+// Original source code available at:
+// https://github.com/unixpickle/Benchmarks/tree/master/roll-avg/cs
+
+using System;
+
+namespace RollAvg {
+
+  public module Program {
+
+    public int addUpTo(int dest) {
+      int sum = 0;
+      for (int i = 1; i <= dest; i++) {
+        sum += i;
+      }
+      return sum;
+    }
+
+    public double rollAverage(int dest) {
+      double average = 0;
+      for (int i = 0; i < dest; i++) {
+        average = (average + (double)addUpTo(i)) / 2.0;
+      }
+      return average;
+    }
+
+    /*public void Main(String[] args) {
+      if (args.Length != 2) {
+        Console.Error.WriteLine("Usage: mono Program.exe <start> <end>");
+        Environment.Exit(1);
+      }
+      int start = Convert.ToInt32(args[0]);
+      int end = Convert.ToInt32(args[1]);
+      double total = 0;
+      for (int i = start; i <= end; i++) {
+        total += rollAverage(i);
+      }
+      Console.WriteLine(total);
+    }*/
+
+    public void Main(int InputSize) {
+        int start = 0;
+        int end = (int)Math.Sqrt(InputSize * 16);
+        double total = 0;
+        for (int i = start; i <= end; i++) {
+          total += rollAverage(i);
+        }
+        Console.WriteLine(total);
+    }
+
+  }
+
+}

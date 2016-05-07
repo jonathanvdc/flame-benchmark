@@ -1,12 +1,14 @@
 
 tests
 {
-    JGrande/benchmark-all.test;
+    ArrayReverse/ArrayReverse.test;
     Brainfuck/benchmark.test;
     Devirtualize/benchmark.test;
     ForceField/benchmark.test;
     Fractal/benchmark.test;
+    JGrande/benchmark-all.test;
     Point/benchmark.test;
+    RollingAverage/RollingAverage.test;
 }
 
 init
