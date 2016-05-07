@@ -183,7 +183,7 @@ public module Harness
                 commentBuilder.AppendLine(
                     "% " + item.Key + ", " + item.Value.Count + ", " +
                     mean + ", " + sd + ", " + relSd);
-                coordinateBuilder.Append("(" + item.Value.Count + "," + mean + ")");
+                coordinateBuilder.Append("(" + item.Key + "," + mean + ")");
             }
         }
         commentBuilder.AppendLine("% ");
