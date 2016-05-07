@@ -165,21 +165,31 @@ public module Harness
         var commentBuilder = new StringBuilder();
         var coordinateBuilder = new StringBuilder();
 
+        double maxRelSd = 0.0;
         commentBuilder.AppendLine("% InputSize, Iterations, Mean, StandardDeviation, RelStandardDeviation");
         coordinateBuilder.AppendLine("coordinates {");
+        coordinateBuilder.Append("    ");
         foreach (var item in State.Results)
         {
             if (item.Value.Count > 0)
             {
                 double mean = item.Value.Mean;
-                double sdDev = item.Value.StandardDeviation;
+                double sd = item.Value.StandardDeviation;
+                double relSd = sd / mean;
+
+                if (relSd > maxRelSd)
+                    maxRelSd = relSd;
 
                 commentBuilder.AppendLine(
                     "% " + item.Key + ", " + item.Value.Count + ", " +
-                    mean + ", " + sdDev + ", " + (sdDev / mean));
+                    mean + ", " + sd + ", " + relSd);
                 coordinateBuilder.Append("(" + item.Value.Count + "," + mean + ")");
             }
         }
+        commentBuilder.AppendLine("% ");
+        commentBuilder.AppendLine("% Max RelStandardDeviation: " + maxRelSd);
+        commentBuilder.AppendLine("% ");
+        coordinateBuilder.AppendLine();
         coordinateBuilder.AppendLine("};");
 
         Console.Write(commentBuilder.ToString());
