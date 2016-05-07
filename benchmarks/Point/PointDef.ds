@@ -1,3 +1,8 @@
+// Based on the benchmark program from ".NET Struct Performance"
+// by Christopher Nahr.
+// Article and original source code at:
+// http://www.kynosarges.org/StructPerformance.html
+
 using System;
 
 public struct Point
